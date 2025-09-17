@@ -8,28 +8,49 @@
   collaborators: ("Diego Barbieri", "Samuele Esposito", "Gioele Scandaletti"),
 )
 
-#let deriv(num, dnm) = [$ (d num) / (d dnm) $]
+= Basic Parallel Merge Sort
 
-= Definition of the derivative
-Something something infinitesimals something something. We can then define the derivative as the limit of the difference quotient as $Delta x arrow 0$:
-$ deriv(f(x), x)&= lim_(Delta x arrow 0) (f(x + Delta x) - f(x)) / (Delta x). $
+Firstly, we need to define the tech stack we are going to use for this project. We choose to use *C++* with the library *OpenMP* for parallelization. The reason behind this choice is oc the high performance and the low level control that the language offers.
 
-== Code!
-```go
-import "fmt"
+== Implementation
 
-func main() {
-  fmt.Println("python sux!!1!")
+We started from the classic implementation of the Merge Sort:
+
+```cpp
+void parallel_merge_sort
+  (std::vector<int>& arr, int left, int right, int depth) {
+
+    if (left >= right) return;
+
+    int mid = left + (right - left) / 2;
+
+    if (depth < 4) { // limit parallel recursion depth
+        #pragma omp parallel sections
+        {
+            #pragma omp section
+            parallel_merge_sort(arr, left, mid, depth + 1);
+            #pragma omp section
+            parallel_merge_sort(arr, mid + 1, right, depth + 1);
+        }
+    } else {
+        // fallback sequential recursion
+        parallel_merge_sort(arr, left, mid, depth + 1);
+        parallel_merge_sort(arr, mid + 1, right, depth + 1);
+    }
+
+    merge(arr, left, mid, right); // sequential merge
 }
 ```
 
-=== Subproblem
-We can nest subproblems!
+== Performance
 
-==== Subsubproblem
-As far as we want!
+In order to measure the performance of out implementation we used the tool *perf* on a Linux machine.
+It's important to note that the performance in this case are highly dependent on the hardware and the specific implementation details. Moreover, we will run the comparison on the same machine to ensure a fair comparison, with the following specifications:
+- CPU: <name>, <n> cores, <m> threads, <frequency> GHz
+- RAM:
+- OS: 
 
-#pagebreak()
+The results of our first implementation are the following:
 
 ```shell
 perf stat ./out/basic-pmsort 100000000
@@ -55,4 +76,4 @@ perf stat ./out/basic-pmsort 100000000
        0.549208000 seconds sys
 ```
 
-aaa
+From the data collected, we can see that the parallel implementation is significantly faster than the sequential one, especially for such large arrays. The bottleneck seems to be caused by the sequential merge step summed with the low number of threads used.
