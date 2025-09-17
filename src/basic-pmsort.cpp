@@ -1,9 +1,4 @@
-#include <omp.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <vector>
-#include <algorithm>
-#include <random>
+#include "merge_sort.h"
 
 // Print helper
 void printArray(const std::vector<int>& arr) {
@@ -30,7 +25,7 @@ void merge(std::vector<int>& arr, int left, int mid, int right) {
 }
 
 // Parallel merge sort
-void parallel_merge_sort(std::vector<int>& arr, int left, int right, int depth = 0) {
+void parallel_merge_sort(std::vector<int>& arr, int left, int right, int depth) {
     if (left >= right) return;
 
     int mid = left + (right - left) / 2;
@@ -52,20 +47,15 @@ void parallel_merge_sort(std::vector<int>& arr, int left, int right, int depth =
     merge(arr, left, mid, right);
 }
 
-int main() {
-    std::vector<int> a(10);
-
-    // Fill & shuffle array
-    for (int i = 0; i < 10; i++) a[i] = i + 1;
-    std::shuffle(a.begin(), a.end(), std::default_random_engine(42));
-
-    printf("Unsorted array:\n");
-    printArray(a);
-
-    parallel_merge_sort(a, 0, a.size() - 1);
-
-    printf("Sorted array:\n");
-    printArray(a);
-
-    return 0;
+void read_input(std::vector<int>& arr, int n, char* inputs[]) {
+    for (int i = 0; i < n; i++) {
+        arr[i] = atoi(inputs[i]);
+    }
 }
+
+void init_default_vector(std::vector<int>& arr) {
+    int n = arr.size();
+    for (int i = 0; i < n; i++) arr[i] = i + 1;
+    std::shuffle(arr.begin(), arr.end(), std::default_random_engine(42));
+}
+
