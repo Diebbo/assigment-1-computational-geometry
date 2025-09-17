@@ -77,3 +77,10 @@ perf stat ./out/basic-pmsort 100000000
 ```
 
 From the data collected, we can see that the parallel implementation is significantly faster than the sequential one, especially for such large arrays. The bottleneck seems to be caused by the sequential merge step summed with the low number of threads used.
+
+Then, we tried comparing the performance of our implementation on the same machine with different number of threads, obtaining the following results:
+
+#figure(
+  image("./comp-4-cpus.png", width: 90%),
+  caption: "Comparison of the performance of the parallel merge sort with different number of threads"
+)<fig:comp-4-cpus>

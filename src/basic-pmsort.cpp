@@ -25,6 +25,7 @@ void merge(std::vector<int>& arr, int left, int mid, int right) {
 }
 
 // Parallel merge sort
+// Note that right is _inclusive_
 void parallel_merge_sort(std::vector<int>& arr, int left, int right, int depth) {
     if (left >= right) return;
 
