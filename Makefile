@@ -17,6 +17,9 @@ out/bench: src/basic_pmsort.cpp src/bench.cpp src/util.cpp | out
 out/selection-problem: src/basic-pmsort.cpp src/selection-problem.cpp | out
 	$(CXX) -o $@ $^ $(CPPFLAGS)
 
+out/parallel-merge: src/basic-pmsort.cpp src/selection-problem.cpp src/parallel-merge.cpp | out
+	$(CXX) -o $@ $^ $(CPPFLAGS)
+
 out:
 	mkdir -p out
 
