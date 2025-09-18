@@ -14,6 +14,9 @@ out/basic_pmsort: src/basic_pmsort.cpp src/main.cpp src/util.cpp | out
 out/bench: src/basic_pmsort.cpp src/bench.cpp src/util.cpp | out
 	$(CXX) $(CPPFLAGS) $(LDFLAGS) -lbenchmark -o $@ $^
 
+out/selection-problem: src/basic-pmsort.cpp src/selection-problem.cpp | out
+	$(CXX) -o $@ $^ $(CPPFLAGS)
+
 out:
 	mkdir -p out
 
