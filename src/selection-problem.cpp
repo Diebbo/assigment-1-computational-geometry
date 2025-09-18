@@ -3,7 +3,7 @@
 #include <cassert>
 #include <utility>
 
-int main(int argc, char *argv[]) {
+int not_main(int argc, char *argv[]) {
   // get the array size from command line or default to 10
   int n = (argc > 1) ? atoi(argv[1]) : 10;
   std::vector<int> a(n);
