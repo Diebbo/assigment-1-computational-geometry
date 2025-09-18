@@ -1,4 +1,7 @@
 #import "@preview/problemst:0.1.2": pset
+#import "@preview/algorithmic:1.0.5"
+#import algorithmic: style-algorithm, algorithm-figure
+#show: style-algorithm
 
 #show: pset.with(
   class: "Computational geometry",
@@ -77,3 +80,81 @@ perf stat ./out/basic-pmsort 100000000
 ```
 
 From the data collected, we can see that the parallel implementation is significantly faster than the sequential one, especially for such large arrays. The bottleneck seems to be caused by the sequential merge step summed with the low number of threads used.
+
+= Parallel Merge
+
+== Selection problem
+The selection problem states: \
+_"The input to our selection problem is the following: two lists sorted in increasing order, $A$ and $B$, and a
+value $k$. The goal is to find two values $a$ and $b$ that are defined as follows. Let $C$ be the result of merging $A$
+and $B$, increasingly. Recall that we have assumed that $C$ contains distinct elements. Consider the set of $k$
+smallest values of $C$ and denote it with $C_k$; the index $a$ is defined as the number elements of $A$ contained in
+$C_k$ (i.e., $a = |C_k inter A|$) and $b$ is defined similarly (i.e., $b = |C_k inter B|$)."_
+
+Given $A$, $B$, the value of $k$, and an index $i$, show that in $O(1)$ time (using a single processor) we can check whether $a < i, a = i "or" a > i$ (without having to compute $C$). Based on this, show that selection can be solved in $O(log n)$ time using a single processor.
+
+
+#algorithm-figure(
+  "Selection problem",
+  vstroke: .5pt + luma(200),
+  {
+    import algorithmic: *
+    Procedure(
+      "Selection-Problem",
+      ("A", "B", "k"),
+      {
+        Assign[$l$][$1$]
+        Assign[$r$][$n$]
+        LineBreak
+        While(
+          $l <= r$,
+          {
+            Assign([a], FnInline[floor][$(l + r) / 2$])
+            Assign([b], $k - a$)
+            IfElseChain(
+              $A[a + 1] < B[b]$,
+              {
+                Assign[$l$][$a + 1$]
+              },
+              [$A[a] > B[b+1]$],
+              {
+                Assign[$r$][$a - 1$]
+              },
+              Return[a, b],
+            )
+          },
+        )
+        Return[*null*]
+      },
+    )
+  }
+)
+
+
+```cpp
+std::pair<int, int> selection_problem(const std::vector<int>& A, const std::vector<int>& B, int k) {
+    int n = A.size();
+    int m = B.size();
+
+    if (k >= n + m) return {n, m};
+    if (k <= 0) return {0, 0};
+
+    int a_min = std::max(0, k - m);
+    int l = a_min;
+    int r = std::min(k, n);
+
+    while (l < r) {
+        int a = l + (r - l) / 2;
+        int b = k - a;
+
+        if (a > a_min && A[a - 1] > B[b]) {
+            r = a - 1;
+        } else if (B[b - 1] > A[a]) {
+            l = a + 1;
+        } else {
+            return {a, b};
+        }
+    }
+    return {l, k - l};
+}
+```

@@ -14,5 +14,6 @@ void merge(std::vector<int>& arr, int left, int mid, int right);
 void parallel_merge_sort(std::vector<int>& arr, int left, int right, int depth = 0);
 void read_input(std::vector<int>& arr, int n, char* inputs[]);
 void init_default_vector(std::vector<int>& arr);
+std::pair<int, int> selection_problem(const std::vector<int>& A, const std::vector<int>& B, int k);
 
 #endif
