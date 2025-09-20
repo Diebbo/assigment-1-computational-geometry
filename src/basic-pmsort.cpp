@@ -30,7 +30,7 @@ void parallel_merge_sort(std::vector<int>& arr, int left, int right, int depth) 
 
     int mid = left + (right - left) / 2;
 
-    if (depth < 4) { // limit parallel recursion depth
+    if (depth < 5) { // limit parallel recursion depth
         #pragma omp parallel sections
         {
             #pragma omp section
