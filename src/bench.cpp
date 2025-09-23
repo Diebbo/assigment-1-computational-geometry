@@ -20,7 +20,11 @@ static void BM_MergeSort(benchmark::State &state) {
   omp_set_num_threads(state.range(1));
   for (auto _ : state) {
     std::vector<int> arr2(arr);
-    parallel_merge_sort(arr2, 0, len - 1);
+    #pragma omp parallel
+    {
+      #pragma omp single
+      parallel_merge_sort(arr, 0, arr.size() - 1, 0);
+    }
     benchmark::DoNotOptimize(arr2);
   }
 }

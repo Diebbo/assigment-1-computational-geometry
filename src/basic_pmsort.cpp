@@ -40,17 +40,12 @@ void parallel_merge_sort(std::vector<int> &arr, int left, int right,
 
   int mid = left + (right - left) / 2;
 
-  if (depth < 4) { 
-    /* limit the depth of parallelism to avoid oversubscription */
 #pragma omp taskgroup
-    {
-#pragma omp task shared(arr) untied if (right - left >= (1 << 4))
-      parallel_merge_sort(arr, left, mid, depth + 1);
-      parallel_merge_sort(arr, mid + 1, right, depth + 1);
-    }
-  } else {
-    // fallback sequential recursion
+  {
+#pragma omp task shared(arr) untied if (right - left >= (1 << 14))
     parallel_merge_sort(arr, left, mid, depth + 1);
+
+#pragma omp task shared(arr) untied if (right - left >= (1 << 14))
     parallel_merge_sort(arr, mid + 1, right, depth + 1);
   }
 
