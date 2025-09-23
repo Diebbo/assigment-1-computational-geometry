@@ -1,4 +1,4 @@
-#include "merge_sort.h"
+#include "merge_sort.hpp"
 #include "util.hpp"
 
 #include <cassert>

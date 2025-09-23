@@ -1,4 +1,4 @@
-#include "merge_sort.h"
+#include "merge_sort.hpp"
 
 // Print helper
 void printArray(const std::vector<int> &arr) {
@@ -40,7 +40,8 @@ void parallel_merge_sort(std::vector<int> &arr, int left, int right,
 
   int mid = left + (right - left) / 2;
 
-  if (depth < 4) { // limit parallel recursion depth
+  if (depth < 4) { 
+    /* limit the depth of parallelism to avoid oversubscription */
 #pragma omp parallel sections
     {
 #pragma omp section

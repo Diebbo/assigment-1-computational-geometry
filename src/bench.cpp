@@ -1,10 +1,11 @@
-#include "merge_sort.h"
+#include "merge_sort.hpp"
 #include "util.hpp"
 
 #include <benchmark/benchmark.h>
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
+#include <omp.h>
 
 static void BM_MergeSort(benchmark::State &state) {
   std::srand(std::time(NULL));
