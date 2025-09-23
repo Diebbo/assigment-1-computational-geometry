@@ -42,11 +42,10 @@ void parallel_merge_sort(std::vector<int> &arr, int left, int right,
 
   if (depth < 4) { 
     /* limit the depth of parallelism to avoid oversubscription */
-#pragma omp parallel sections
+#pragma omp taskgroup
     {
-#pragma omp section
+#pragma omp task shared(arr) untied if (right - left >= (1 << 4))
       parallel_merge_sort(arr, left, mid, depth + 1);
-#pragma omp section
       parallel_merge_sort(arr, mid + 1, right, depth + 1);
     }
   } else {
