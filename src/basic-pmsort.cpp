@@ -48,10 +48,12 @@ void parallel_merge_sort(std::vector<int>& arr, int left, int right, int depth) 
     merge(arr, left, mid, right);
 }
 
-void read_input(std::vector<int>& arr, int n, char* inputs[]) {
+std::vector<int> read_input(int n, char* inputs[]) {
+    std::vector<int> arr(n);
     for (int i = 0; i < n; i++) {
         arr[i] = atoi(inputs[i]);
     }
+    return arr;
 }
 
 void init_default_vector(std::vector<int>& arr) {

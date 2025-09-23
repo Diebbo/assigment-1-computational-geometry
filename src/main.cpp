@@ -3,12 +3,22 @@
 #include <cassert>
 
 int main(int argc, char *argv[]) {
-  std::srand(time(NULL));
-
   // get the array size from command line or default to 10
   int n = (argc > 1) ? atoi(argv[1]) : 10;
-  std::vector<int> a(n);
-  std::generate(a.begin(), a.end(), std::rand);
+  std::vector<int> a;
+  if (argc > 2) {
+    // assert the number of inputs matches n
+    if (argc - 2 != n) {
+      fprintf(stderr, "Error: Expected %d numbers, but got %d\n", n, argc - 2);
+      return 1;
+    }
+
+    // read the numbers from command line
+    a = read_input(n, &argv[2]);
+  } else {
+    // Fill & shuffle array
+    a = init_default_vector(n);
+  }
 
   printf("Unsorted array:\n");
   printArray(a);
