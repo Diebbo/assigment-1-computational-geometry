@@ -11,15 +11,15 @@ static void BM_MergeSort(benchmark::State &state) {
 
   // Initialize the vector
   int len = state.range(0);
-  std::vector<int> arr = std::vector<int>(len);
-  std::generate(arr.begin(), arr.end(), std::rand);
+  std::vector<int> arr = init_default_vector(len);
 
   // Run the benchmark
   omp_set_max_active_levels(omp_get_max_active_levels());
   omp_set_num_threads(state.range(1));
   for (auto _ : state) {
-    parallel_merge_sort(arr, 0, len - 1);
-    benchmark::DoNotOptimize(arr);
+    std::vector<int> arr2(arr);
+    parallel_merge_sort(arr2, 0, len - 1);
+    benchmark::DoNotOptimize(arr2);
   }
 }
 BENCHMARK(BM_MergeSort)
@@ -29,14 +29,24 @@ BENCHMARK(BM_MergeSort)
     ->UseRealTime();
 
 static void BM_ReadFromFile(benchmark::State &state) {
-  for (auto _ : state)
-    benchmark::DoNotOptimize(read_from_file("/tmp/data.txt"));
+  omp_set_max_active_levels(omp_get_max_active_levels());
+  omp_set_num_threads(state.range(1));
+  for (auto _ : state) {
+    auto arr = read_from_file("/tmp/data.txt");
+    parallel_merge_sort(arr, 0, arr.size() - 1);
+    benchmark::DoNotOptimize(arr);
+  }
 }
 BENCHMARK(BM_ReadFromFile);
 
 static void BM_Generate(benchmark::State &state) {
-  for (auto _ : state)
-    benchmark::DoNotOptimize(init_default_vector(100000));
+  omp_set_max_active_levels(omp_get_max_active_levels());
+  omp_set_num_threads(state.range(1));
+  for (auto _ : state) {
+    auto arr = init_default_vector(100000);
+    parallel_merge_sort(arr, 0, arr.size() - 1);
+    benchmark::DoNotOptimize(arr);
+  }
 }
 BENCHMARK(BM_Generate);
 
