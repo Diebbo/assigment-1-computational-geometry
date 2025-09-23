@@ -7,7 +7,7 @@ all: out/basic-pmsort out/bench
 .PHONY: bench
 bench: out/bench
 	python3 src/scripts/array_generator.py -o /tmp/data.txt -n 100000
-	out/bench
+	out/bench --benchmark_out=./out/bench_result.json --benchmark_out_format=json
 
 out/basic-pmsort: src/basic-pmsort.cpp src/main.cpp src/util.cpp | out
 	$(CXX) $(CPPFLAGS) $(LDFLAGS) -o $@ $^
