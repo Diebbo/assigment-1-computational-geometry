@@ -1,5 +1,8 @@
 #include "merge_sort.h"
+#include "util.hpp"
+
 #include <benchmark/benchmark.h>
+#include <cstdio>
 #include <cstdlib>
 #include <ctime>
 
@@ -24,5 +27,17 @@ BENCHMARK(BM_MergeSort)
     ->Ranges({{8, 8 << 18}, {1, 8}})
     ->MeasureProcessCPUTime()
     ->UseRealTime();
+
+static void BM_ReadFromFile(benchmark::State &state) {
+  for (auto _ : state)
+    benchmark::DoNotOptimize(read_from_file("/tmp/data.txt"));
+}
+BENCHMARK(BM_ReadFromFile);
+
+static void BM_Generate(benchmark::State &state) {
+  for (auto _ : state)
+    benchmark::DoNotOptimize(init_default_vector(100000));
+}
+BENCHMARK(BM_Generate);
 
 BENCHMARK_MAIN();

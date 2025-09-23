@@ -4,9 +4,14 @@ LDFLAGS := -L/opt/homebrew/lib
 
 all: out/basic-pmsort out/bench
 
-out/basic-pmsort: src/basic-pmsort.cpp src/main.cpp | out
+.PHONY: bench
+bench: out/bench
+	python3 src/scripts/array_generator.py -o /tmp/data.txt -n 100000
+	out/bench
+
+out/basic-pmsort: src/basic-pmsort.cpp src/main.cpp src/util.cpp | out
 	$(CXX) $(CPPFLAGS) $(LDFLAGS) -o $@ $^
-out/bench: src/basic-pmsort.cpp src/bench.cpp | out
+out/bench: src/basic-pmsort.cpp src/bench.cpp src/util.cpp | out
 	$(CXX) $(CPPFLAGS) $(LDFLAGS) -lbenchmark -o $@ $^
 
 out:
