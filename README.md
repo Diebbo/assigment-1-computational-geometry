@@ -4,6 +4,9 @@ Project One: Parallel Merge Sort
 ## Todo
 
 - [ ] Task 1
+	- [ ] implementazione algoritmo
+	- [ ] benchmarking @Diebbo
+	- [ ] main parametrizzabile @esposm03
 - [ ] Task 2
 - [ ] Task 3
 - [ ] Task 4
@@ -12,3 +15,4 @@ Project One: Parallel Merge Sort
 ## Resources
 
 - Benchmarking library: https://github.com/google/benchmark
+- Benchmarking visualizer: https://github.com/gaujay/jomt
