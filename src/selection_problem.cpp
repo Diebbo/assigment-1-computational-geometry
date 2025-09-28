@@ -1,4 +1,5 @@
-#include "merge_sort.h"
+#include "merge_sort.hpp"
+#include "util.hpp"
 
 #include <cassert>
 #include <utility>
@@ -15,10 +16,10 @@ int not_main(int argc, char *argv[]) {
     }
 
     // read the numbers from command line
-    read_input(a, n, &argv[2]);
+    read_input(n, &argv[2]);
   } else {
     // Fill & shuffle array
-    init_default_vector(a);
+    a = init_default_vector(n);
   }
 
   // split the array at index i = n / 2

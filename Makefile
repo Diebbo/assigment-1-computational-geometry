@@ -2,22 +2,20 @@ CFLAGS := -O3
 CPPFLAGS := -std=c++17 -fopenmp -g -I/opt/homebrew/include -O3
 LDFLAGS := -L/opt/homebrew/lib
 
-all: out/basic_pmsort out/bench
+all: out/basic_pmsort
 
 .PHONY: bench
 bench: out/bench
 	python3 src/scripts/array_generator.py -o /tmp/data.txt -n 100000
 	out/bench --benchmark_out=./out/bench_result.json --benchmark_out_format=json --benchmark_filter=BM_MergeSort
 
-out/basic_pmsort: src/basic_pmsort.cpp src/main.cpp src/util.cpp | out
+out/basic_pmsort: src/basic_pmsort.cpp src/main.cpp src/util.cpp src/selection_problem.cpp src/parallel_merge.cpp src/fully_parallel_merge_sort.cpp | out
 	$(CXX) $(CPPFLAGS) $(LDFLAGS) -o $@ $^
+
 out/bench: src/basic_pmsort.cpp src/bench.cpp src/util.cpp | out
 	$(CXX) $(CPPFLAGS) $(LDFLAGS) -lbenchmark -o $@ $^
 
-out/selection-problem: src/basic-pmsort.cpp src/selection-problem.cpp | out
-	$(CXX) -o $@ $^ $(CPPFLAGS)
-
-out/parallel-merge: src/basic-pmsort.cpp src/selection-problem.cpp src/parallel-merge.cpp | out
+out/parallel_merge: src/basic_pmsort.cpp src/selection_problem.cpp src/util.cpp src/parallel_merge.cpp src/fully_parallel_merge_sort.cpp | out
 	$(CXX) -o $@ $^ $(CPPFLAGS)
 
 out:
