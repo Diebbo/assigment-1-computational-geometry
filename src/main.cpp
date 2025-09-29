@@ -1,4 +1,5 @@
-#include "merge_sort.h"
+#include "merge_sort.hpp"
+#include "util.hpp"
 
 #include <cassert>
 
@@ -7,10 +8,17 @@ void handle_selection(int n);
 void handle_fully_parallel_merge_sort(int n);
 void handle_parallel_merge(int n);
 
+/* Usage:
+ * ./main -p n : parallel merge sort
+ * ./main -s n : selection problem
+ * ./main -m n : parallel merge
+ * ./main -f n : fully parallel merge sort
+ * ./main -p n -d : enable nested parallelism with 4 threads
+ * ./main -p n -n : disable nested parallelism
+*/
 int main(int argc, char *argv[]) {
-  // get the array size from command line or default to 10
   int n = (argc > 2) ? atoi(argv[2]) : 10;
-  if (argc > 1) {
+  if (argc > 2) {
     // arg parse
     if (argv[1][1] == 'p') {
       handle_parallel_merge_sort(n);
@@ -28,6 +36,16 @@ int main(int argc, char *argv[]) {
     fprintf(stderr, "Error: Not enough inputs\n");
     return 1;
   }
+
+    // read the numbers from command line
+  //   a = read_input(n, &argv[2]);
+  // } else {
+  //   // Fill & shuffle array
+  //   a = init_default_vector(n);
+  // }
+  //
+  // printf("Unsorted array:\n");
+  // printArray(a);
 
   omp_set_nested(1);
 
@@ -47,7 +65,7 @@ int main(int argc, char *argv[]) {
 void handle_parallel_merge_sort(int n) {
   std::vector<int> a(n);
 
-  init_default_vector(a);
+  a = init_default_vector(n);
 
   printf("Unsorted array:\n");
   printArray(a);
@@ -61,7 +79,7 @@ void handle_parallel_merge_sort(int n) {
 
 void handle_selection(int n) {
   std::vector<int> a(n);
-  init_default_vector(a);
+  a = init_default_vector(n);
 
   int i = n / 2;
   std::vector<int> left(a.begin(), a.begin() + i);
@@ -85,7 +103,7 @@ void handle_selection(int n) {
 
 void handle_fully_parallel_merge_sort(int n) {
   std::vector<int> a(n);
-  init_default_vector(a);
+  a = init_default_vector(n);
 
   fully_parallel_merge_sort(a, 0, a.size() - 1);
   // std::vector<int> merged(n);
@@ -96,7 +114,7 @@ void handle_fully_parallel_merge_sort(int n) {
 
 void handle_parallel_merge(int n) {
   std::vector<int> a(n);
-  init_default_vector(a);
+  a = init_default_vector(n);
 
   // split the array at index i = n / 2
   int i = n / 2;
