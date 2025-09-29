@@ -4,6 +4,8 @@ LDFLAGS := -L/opt/homebrew/lib
 
 all: out/basic_pmsort
 
+test: out/test_simple_parallel_merge
+
 .PHONY: bench
 bench: out/bench
 	python3 src/scripts/array_generator.py -o /tmp/data.txt -n 100000
@@ -17,6 +19,9 @@ out/bench: src/basic_pmsort.cpp src/bench.cpp src/util.cpp | out
 
 out/parallel_merge: src/basic_pmsort.cpp src/selection_problem.cpp src/util.cpp src/parallel_merge.cpp src/fully_parallel_merge_sort.cpp | out
 	$(CXX) -o $@ $^ $(CPPFLAGS)
+
+out/test_simple_parallel_merge: src/selection_problem.cpp src/parallel_merge.cpp src/util.cpp src/basic_pmsort.cpp test/test_simple_parallel_merge.cpp | out
+	$(CXX) -o $@ $^ $(CPPFLAGS) -o $@ 
 
 out:
 	mkdir -p out
