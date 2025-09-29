@@ -5,7 +5,7 @@
 #include <vector>
 
 std::vector<int> read_from_file(const char *filename) {
-  std::ifstream infile("file.txt");
+  std::ifstream infile(filename);
 
   int length;
   infile >> length;
