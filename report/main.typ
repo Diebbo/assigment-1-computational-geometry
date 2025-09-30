@@ -144,7 +144,8 @@ Given $A$, $B$, the value of $k$, and an index $i$, show that in $O(1)$ time (us
 
 
 ```cpp
-std::pair<int, int> selection_problem(const std::vector<int>& A, const std::vector<int>& B, int k) {
+std::pair<int, int> selection_problem(const std::vector<int> &A,
+                              const std::vector<int> &B, int k) {
     int n = A.size();
     int m = B.size();
 
