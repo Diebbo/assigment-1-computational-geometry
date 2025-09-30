@@ -1,7 +1,9 @@
 #include "merge_sort.hpp"
 #include "util.hpp"
+#include "cli.hpp"
 
 #include <cassert>
+#include <omp.h>
 
 void handle_parallel_merge_sort(int n);
 void handle_selection(int n);
@@ -17,27 +19,28 @@ void handle_parallel_merge(int n);
  * ./main -p n -n : disable nested parallelism
 */
 int main(int argc, char *argv[]) {
-  int n = (argc > 2) ? atoi(argv[2]) : 10;
-  if (argc > 2) {
-    // arg parse
-    if (argv[1][1] == 'p') {
-      handle_parallel_merge_sort(n);
-    } else if (argv[1][1] == 's') {
-      handle_selection(n);
-    } else if (argv[1][1] == 'm') {
-      handle_parallel_merge(n);
-    } else if (argv[1][1] == 'f') {
-      handle_fully_parallel_merge_sort(n);
-    } else {
-      fprintf(stderr, "Error: Unknown option %s\n", argv[2]);
-      return 1;
-    }
-  } else {
-    fprintf(stderr, "Error: Not enough inputs\n");
-    return 1;
-  }
+  push_flag('m', "merge", true, true, "problem", "Run the parallel merge exercise");
+  push_flag('s', "selection", true, true, "problem", "Run the Selection Problem exercise");
+  push_flag('p', "parallel-msort", true, true, "problem", "Run the Parallel Merge Sort exercise");
+  push_flag('f', "fully-parallel-msort", true, true, "problem", "Run the Fully Partial Merge Sort exercise");
+  push_flag(' ', "no-nested", false, false, nullptr, "Disable nested parallelism");
+  push_flag(' ', "multithread", false, false, nullptr, "Enable multithreading with 4 cores");
 
-    // read the numbers from command line
+  parse_flags(argc, argv);
+  print_parsed_flags();
+
+  flag_result *problem = get_flag_group("problem");
+  int n = atoi(problem->value);
+  if (strcmp(problem->name_long, "merge") == 0) 
+    handle_parallel_merge(n);
+  else if (strcmp(problem->name_long, "selection") == 0) 
+    handle_selection(n);
+  else if (strcmp(problem->name_long, "parallel-msort") == 0) 
+    handle_parallel_merge_sort(n);
+  else if (strcmp(problem->name_long, "fully-parallel-msort") == 0) 
+    handle_fully_parallel_merge_sort(n);
+
+  // read the numbers from command line
   //   a = read_input(n, &argv[2]);
   // } else {
   //   // Fill & shuffle array
@@ -47,18 +50,13 @@ int main(int argc, char *argv[]) {
   // printf("Unsorted array:\n");
   // printArray(a);
 
-  omp_set_nested(1);
-
-  if (argc > 3) {
-    if (argv[3][1] == 'd') {
-      omp_set_num_threads(4);
-      printf("Debug mode: Enabled nested parallelism with 4 threads\n");
-    }
-    if (argv[3][1] == 'n') {
-      omp_set_nested(0);
-      printf("Disabled nested parallelism\n");
-    }
-  }
+  if (flag_result *f = get_flag_value("multithread"); f != nullptr) 
+    omp_set_num_threads(4);
+  if (flag_result *f = get_flag_value("nested"); f != nullptr) 
+    omp_set_nested(1);
+  else
+    omp_set_nested(0);
+  
   return 0;
 }
 
