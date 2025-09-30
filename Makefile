@@ -11,10 +11,10 @@ bench: out/bench
 	python3 src/scripts/array_generator.py -o /tmp/data.txt -n 100000
 	out/bench --benchmark_out=./out/bench_result.json --benchmark_out_format=json --benchmark_filter=BM_MergeSort
 
-out/basic_pmsort: src/basic_pmsort.cpp src/main.cpp src/util.cpp src/selection_problem.cpp src/parallel_merge.cpp src/fully_parallel_merge_sort.cpp | out
+out/basic_pmsort: src/basic_pmsort.cpp src/main.cpp src/util.cpp src/cli.cpp src/selection_problem.cpp src/parallel_merge.cpp src/fully_parallel_merge_sort.cpp | out
 	$(CXX) $(CPPFLAGS) $(LDFLAGS) -o $@ $^
 
-out/bench: src/basic_pmsort.cpp src/bench.cpp src/util.cpp | out
+out/bench: src/basic_pmsort.cpp src/bench.cpp src/util.cpp src/cli.cpp | out
 	$(CXX) $(CPPFLAGS) $(LDFLAGS) -lbenchmark -o $@ $^
 
 out/parallel_merge: src/basic_pmsort.cpp src/selection_problem.cpp src/util.cpp src/parallel_merge.cpp src/fully_parallel_merge_sort.cpp | out
