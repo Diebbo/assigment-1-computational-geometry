@@ -1,6 +1,6 @@
 #import "@preview/problemst:0.1.2": pset
 #import "@preview/algorithmic:1.0.5"
-#import algorithmic: style-algorithm, algorithm-figure
+#import algorithmic: algorithm-figure, style-algorithm
 #show: style-algorithm
 
 #show: pset.with(
@@ -52,7 +52,7 @@ The results of our first implementation are the following:
 
 #figure(
   image("./comp-4-cpus.png", width: 90%),
-  caption: "Comparison of the performance of the parallel merge sort with different number of threads"
+  caption: "Comparison of the performance of the parallel merge sort with different number of threads",
 )<fig:comp-4-cpus>
 
 As a first test, we tried comparing the performance of our implementation on the same machine with different number of threads involved(see @fig:comp-4-cpus). The results maintained our expectations: as we increase the number of threads, the performance improves. However, we can see that the improvement is not linear, and after a certain point, the performance starts to degrade.
@@ -98,13 +98,26 @@ From the data collected, we can see that the parallel implementation is signific
 == Selection problem
 The selection problem states: \
 _"The input to our selection problem is the following: two lists sorted in increasing order, $A$ and $B$, and a
-value $k$. The goal is to find two values $a$ and $b$ that are defined as follows. Let $C$ be the result of merging $A$
-and $B$, increasingly. Recall that we have assumed that $C$ contains distinct elements. Consider the set of $k$
-smallest values of $C$ and denote it with $C_k$; the index $a$ is defined as the number elements of $A$ contained in
-$C_k$ (i.e., $a = |C_k inter A|$) and $b$ is defined similarly (i.e., $b = |C_k inter B|$)."_
+  value $k$. The goal is to find two values $a$ and $b$ that are defined as follows. Let $C$ be the result of merging $A$
+  and $B$, increasingly. Recall that we have assumed that $C$ contains distinct elements. Consider the set of $k$
+  smallest values of $C$ and denote it with $C_k$; the index $a$ is defined as the number elements of $A$ contained in
+  $C_k$ (i.e., $a = |C_k inter A|$) and $b$ is defined similarly (i.e., $b = |C_k inter B|$)."_
 
+== Solving selection
+/*
 Given $A$, $B$, the value of $k$, and an index $i$, show that in $O(1)$ time (using a single processor) we can check whether $a < i, a = i "or" a > i$ (without having to compute $C$). Based on this, show that selection can be solved in $O(log n)$ time using a single processor.
+*/
 
+Given $A$, $B$, the value of $k$, and an index $i$, we can check whether $a < i, a = i "or" a > i$ in $O(1)$ time, using a single processor and without having to compute $C$.
+
+We can do this by observing the following (with $A[1]$ being the first element of $A$):
+1. If $A[i] > B[k - i + 1]$, then the biggest element of $A$ included in the hypothetical $C_k$ would be smaller than the smallest element of $B$ excluded from $C_k$. Therefore, $a < i$.
+2. If $A[i + 1] < B[k - i]$, then the smallest element of $A$ excluded from the hypothetical $C_k$ would be bigger than the biggest element of $B$ included in $C_k$. Therefore, $a > i$.
+3. If neither of the two previous conditions hold, then the biggest element of $A$ included in the hypothetical $C_k$ is smaller than the biggest element of $B$ excluded from $C_k$, and the smallest element of $A$ excluded from $C_k$ is bigger than the smallest element of $B$ included in $C_k$. Therefore, $a = i$.
+
+This is the general idea to check the relation between $a$ and $i$ in constant time, with just at most two comparisons.
+
+We can use this idea to solve the selection problem in $O(log n)$ time using a single processor, by performing a binary search on the possible values of $a$. We start with the range $[max(0, k - m), min(k, n)]$ (where $n$ and $m$ are the sizes of $A$ and $B$ respectively) and repeatedly halve the range based on the result of the check described above, until we find the correct value of $a$. The corresponding value of $b$ can then be computed as $b = k - a$.
 
 #algorithm-figure(
   "Selection problem",
@@ -119,29 +132,30 @@ Given $A$, $B$, the value of $k$, and an index $i$, show that in $O(1)$ time (us
         Assign[$r$][$n$]
         LineBreak
         While(
-          $l <= r$,
+          $l < r$,
           {
             Assign([a], FnInline[floor][$(l + r) / 2$])
             Assign([b], $k - a$)
             IfElseChain(
+              $A[a] > B[b+1]$,
+              {
+                Assign[$r$][$a - 1$]
+              },
               $A[a + 1] < B[b]$,
               {
                 Assign[$l$][$a + 1$]
-              },
-              [$A[a] > B[b+1]$],
-              {
-                Assign[$r$][$a - 1$]
               },
               Return[a, b],
             )
           },
         )
-        Return[*null*]
+        Return[l, k-l]
       },
     )
-  }
+  },
 )
 
+The following code implements the above algorithm in C++, considering the edge cases as well:
 
 ```cpp
 std::pair<int, int> selection_problem(const std::vector<int> &A,
@@ -171,3 +185,73 @@ std::pair<int, int> selection_problem(const std::vector<int> &A,
     return {l, k - l};
 }
 ```
+
+== Fully Parallel Merging
+
+Using the method explained in the pdf, we can merge two sorted arrays in parallel. The following code in C++ implements that method:
+
+```cpp
+
+void parallel_merge(std::vector<int> &A, std::vector<int> &B,
+                    std::vector<int> &C, int offset) {
+
+  int n = A.size() + B.size();
+  int num_threads = omp_get_max_threads();
+
+  if (n < num_threads)
+    num_threads = n;
+
+  std::vector<int> a_indices(num_threads + 1);
+  std::vector<int> b_indices(num_threads + 1);
+  std::vector<int> k_indices(num_threads + 1);
+  a_indices[0] = 0;
+  b_indices[0] = 0;
+  k_indices[0] = 0;
+
+  #pragma omp parallel for
+  for (int i = 1; i < num_threads; i++) {
+    int k = i * n / num_threads;
+    auto [a_count, b_count] = selection(A, B, k);
+    a_indices[i] = a_count;
+    b_indices[i] = b_count;
+    k_indices[i] = k;
+  }
+
+  a_indices[num_threads] = A.size();
+  b_indices[num_threads] = B.size();
+  k_indices[num_threads] = n;
+
+  #pragma omp parallel for
+  for (int i = 0; i < num_threads; i++) {
+    int a_end = a_indices[i + 1];
+    int b_end = b_indices[i + 1];
+
+    int a_idx = a_indices[i];
+    int b_idx = b_indices[i];
+    int k_idx = k_indices[i] + offset;
+
+    while (a_idx < a_end && b_idx < b_end) {
+      if (A[a_idx] <= B[b_idx])
+        C[k_idx++] = A[a_idx++];
+      else
+        C[k_idx++] = B[b_idx++];
+    }
+    while (a_idx < a_end)
+      C[k_idx++] = A[a_idx++];
+    while (b_idx < b_end)
+      C[k_idx++] = B[b_idx++];
+
+  }
+}
+
+```
+
+== Benchmarking
+
+
+
+= Fully Parallel Merge Sort
+
+== Benchmarking
+
+= Conclusion
