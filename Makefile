@@ -4,7 +4,7 @@ LDFLAGS := -L/opt/homebrew/lib
 TESTFILES := $(wildcard test/*.cpp)
 TESTTARGETS := src/selection_problem.cpp src/parallel_merge.cpp src/util.cpp src/basic_pmsort.cpp src/fully_parallel_merge_sort.cpp
 
-all: out/basic_pmsort
+all: out/bench
 
 test: out/test_simple_parallel_merge out/test_selection_problem out/test_fully_parallel_merge
 	./out/test_simple_parallel_merge
@@ -13,13 +13,17 @@ test: out/test_simple_parallel_merge out/test_selection_problem out/test_fully_p
 
 .PHONY: bench
 bench: out/bench
-	python3 src/scripts/array_generator.py -o /tmp/data.txt -n 100000
-	out/bench --benchmark_out=./out/bench_result.json --benchmark_out_format=json --benchmark_filter=BM_MergeSort
+	python3 src/scripts/array_generator.py -o /tmp/data.txt -n 2097152
+	out/bench --benchmark_out=./out/bench_result_fpms.json --benchmark_out_format=json --benchmark_filter=BM_FullyParallelMergeSort
+	out/bench --benchmark_out=./out/bench_result_spms.json --benchmark_out_format=json --benchmark_filter=BM_MergeSort
+	python3 src/scripts/array_generator.py -o /tmp/sorted.txt -n 2097152 -s
+	out/bench --benchmark_out=./out/bench_result_fpms_sorted.json --benchmark_out_format=json --benchmark_filter=BM_Selection
 
-out/basic_pmsort: src/basic_pmsort.cpp src/main.cpp src/util.cpp src/cli.cpp src/selection_problem.cpp src/parallel_merge.cpp src/fully_parallel_merge_sort.cpp | out
+
+out/basic_pmsort: src/basic_pmsort.cpp src/main.cpp src/util.cpp srcucli.cpp src/selection_problem.cpp src/parallel_merge.cpp src/fully_parallel_merge_sort.cpp | out
 	$(CXX) $(CPPFLAGS) $(LDFLAGS) -o $@ $^
 
-out/bench: src/basic_pmsort.cpp src/bench.cpp src/util.cpp src/cli.cpp | out
+out/bench: src/basic_pmsort.cpp src/bench.cpp src/util.cpp src/cli.cpp src/selection_problem.cpp src/parallel_merge.cpp src/fully_parallel_merge_sort.cpp | out
 	$(CXX) $(CPPFLAGS) $(LDFLAGS) -lbenchmark -o $@ $^
 
 out/parallel_merge: src/basic_pmsort.cpp src/selection_problem.cpp src/util.cpp src/parallel_merge.cpp src/fully_parallel_merge_sort.cpp | out
