@@ -1,5 +1,5 @@
-#include "merge_sort.hpp"
-#include "util.hpp"
+#include "../merge_sort.hpp"
+#include "../util.hpp"
 
 #include <benchmark/benchmark.h>
 #include <cstdio>
@@ -167,6 +167,5 @@ BENCHMARK(BM_Generate)
     ->Ranges({{8, 8 << 18}, {1, 8}})
     ->MeasureProcessCPUTime()
     ->UseRealTime();
-
 
 BENCHMARK_MAIN();

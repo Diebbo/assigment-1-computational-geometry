@@ -1,6 +1,6 @@
-#include "merge_sort.hpp"
-#include "util.hpp"
-#include "cli.hpp"
+#include "../merge_sort.hpp"
+#include "../util.hpp"
+#include "../cli.hpp"
 
 #include <cassert>
 #include <omp.h>
