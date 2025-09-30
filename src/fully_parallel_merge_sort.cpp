@@ -17,11 +17,11 @@ void fully_parallel_merge_sort(std::vector<int> &arr, int left, int right,
   int mid = left + (right - left) / 2;
 
   if (depth < 5) { // limit parallel recursion depth
-#pragma omp parallel sections
+#pragma omp taskgroup
     {
-#pragma omp section
+#pragma omp task shared(arr) untied if (right - left >= (1 << 14))
       fully_parallel_merge_sort(arr, left, mid, depth + 1);
-#pragma omp section
+#pragma omp task shared(arr) untied if (right - left >= (1 << 14))
       fully_parallel_merge_sort(arr, mid + 1, right, depth + 1);
     }
   } else {
