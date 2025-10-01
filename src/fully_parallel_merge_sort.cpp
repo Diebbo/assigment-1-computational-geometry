@@ -16,17 +16,11 @@ void fully_parallel_merge_sort(std::vector<int> &arr, int left, int right,
 
   int mid = left + (right - left) / 2;
 
-  if (depth < 5) { // limit parallel recursion depth
 #pragma omp taskgroup
-    {
-#pragma omp task shared(arr) untied if (right - left >= (1 << 14))
-      fully_parallel_merge_sort(arr, left, mid, depth + 1);
-#pragma omp task shared(arr) untied if (right - left >= (1 << 14))
-      fully_parallel_merge_sort(arr, mid + 1, right, depth + 1);
-    }
-  } else {
-    // fallback sequential recursion
+  {
+#pragma omp task shared(arr) untied if (right - left >= (1 << 12))
     fully_parallel_merge_sort(arr, left, mid, depth + 1);
+#pragma omp task shared(arr) untied if (right - left >= (1 << 12))
     fully_parallel_merge_sort(arr, mid + 1, right, depth + 1);
   }
   // create the two vectors to merge

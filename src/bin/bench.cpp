@@ -68,7 +68,7 @@ static void BM_StdSort(benchmark::State &state) {
 }
 BENCHMARK(BM_StdSort)
     ->RangeMultiplier(2)
-    ->Ranges({{8, 8 << 18}, {1, 2}})
+    ->Ranges({{8, 8 << 18}, {1, 1}})
     ->MeasureProcessCPUTime()
     ->UseRealTime();
 

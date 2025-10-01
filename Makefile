@@ -20,6 +20,8 @@ tests: out/tests
 	out/tests
 
 bench: out/bench
+
+fullbench: out/bench
 	python3 src/scripts/array_generator.py -o /tmp/data.txt -n 2097152
 	out/bench --benchmark_out=./out/bench_result_fpms.json --benchmark_out_format=json --benchmark_filter=BM_FullyParallelMergeSort
 	out/bench --benchmark_out=./out/bench_result_spms.json --benchmark_out_format=json --benchmark_filter=BM_MergeSort
