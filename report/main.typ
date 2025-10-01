@@ -252,6 +252,68 @@ void parallel_merge(std::vector<int> &A, std::vector<int> &B,
 
 = Fully Parallel Merge Sort
 
+To round off, we can combine all the techniques explained so far to obtain a fully parallel merge sort algorithm. The following code implements it:
+
+```cpp
+void fully_parallel_merge_sort(std::vector<int> &arr, int left, int right,
+                               int depth) {
+  if (left >= right)
+    return;
+
+  int mid = left + (right - left) / 2;
+
+  // limit parallel recursion depth based on machine capabilities
+  if (depth < 5) { 
+#pragma omp taskgroup
+    {
+#pragma omp task shared(arr) untied if (right - left >= (1 << 14))
+      fully_parallel_merge_sort(arr, left, mid, depth + 1);
+#pragma omp task shared(arr) untied if (right - left >= (1 << 14))
+      fully_parallel_merge_sort(arr, mid + 1, right, depth + 1);
+    }
+  } else {
+    // fallback sequential recursion
+    fully_parallel_merge_sort(arr, left, mid, depth + 1);
+    fully_parallel_merge_sort(arr, mid + 1, right, depth + 1);
+  }
+  // create the two vectors to merge
+  std::vector<int> left_vec;
+  std::vector<int> right_vec;
+  left_vec.assign(arr.begin() + left, arr.begin() + mid + 1);
+  right_vec.assign(arr.begin() + mid + 1, arr.begin() + right + 1);
+
+  parallel_merge(left_vec, right_vec, arr, left);
+}
+```
+
 == Benchmarking
+
+To test the performance of our implementation, we used the same benchmarking framework as before, to compare it with the previous parallel implementation and the algorithm from the standard library.
+
+#figure(
+  image("./fpms-cpus-comparison-random-array.png", width: 90%),
+  caption: "Comparison of performance of the fully parallel merge sort with different number of threads",
+)<fig:fully-parallel-merge-sort>
+
+At first glance, we can observe that the performance seems to respect our expectation reaching an order of magnitude of improvement compared to the algorithm.
+
+#figure(
+  image("./std-sort.png", width: 90%),
+  caption: "standard library sort performance",
+)<fig:fully-parallel-merge-sort-sorted>
+
+At the same time it's important to notice that in our performance graph (see @fig:fully-parallel-merge-sort-sorted) for some small inputs there's a plateau in performance. Let's zoom in on that part of the graph to understand better what's going on.
+
+#figure(    
+  grid(
+        columns: 2,     // 2 means 2 auto-sized columns
+        gutter: 2mm,    // space between columns
+        image("./smaller-resoults-fully-parallel.png"),
+        image("./smaller-resoults-standard-sort.png"),
+  ),
+  caption: "standard library sort performance zoomed in",
+)<fig:fully-parallel-merge-sort-sorted-zoomed>
+
+We can see that for both single and multiple threads there's a huge gap in performance between our implementation and the standard library one. We were expecting this behavior, since the standard library implementation is highly optimized and uses various techniques to improve performance, such as insertion sort for small arrays and other low-level optimizations. 
 
 = Conclusion
