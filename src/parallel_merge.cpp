@@ -8,7 +8,8 @@ void parallel_merge(std::vector<int> &A, std::vector<int> &B,
                     std::vector<int> &C, int offset) {
   int n = A.size() + B.size();
   // get number of threads
-  int num_threads = omp_get_max_threads();
+  
+  int num_threads = omp_get_num_threads();
 
   if (n < 2*num_threads)
     num_threads = n / 2;
@@ -20,22 +21,23 @@ void parallel_merge(std::vector<int> &A, std::vector<int> &B,
   b_indices[0] = 0;
   k_indices[0] = 0;
 
-#pragma opm parallel
+#pragma omp taskgroup
   {
-#pragma omp for
+#pragma omp task untied if (n >= (1 << 10))
     for (int i = 1; i < num_threads; i++) {
       int k = i * n / num_threads;
-      auto [a_count, b_count] = selection(A, B, k);
+      auto [a_count, b_count] = selection(A, B,  k);
       a_indices[i] = a_count;
       b_indices[i] = b_count;
       k_indices[i] = k;
     }
+  
 
     a_indices[num_threads] = A.size();
     b_indices[num_threads] = B.size();
     k_indices[num_threads] = n;
 
-#pragma omp for
+#pragma omp task untied if (n >= (1 << 10))
     for (int i = 0; i < num_threads; i++) {
       int a_end = a_indices[i + 1];
       int b_end = b_indices[i + 1];
