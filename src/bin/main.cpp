@@ -3,6 +3,7 @@
 #include "../cli.hpp"
 
 #include <cassert>
+#include <cstring>
 #include <omp.h>
 
 void handle_parallel_merge_sort(int n);
