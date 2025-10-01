@@ -18,6 +18,14 @@
 
 Firstly, we need to define the tech stack we are going to use for this project. We choose to use *C++* with the library *OpenMP* for parallelization. The reason behind this choice is the high performance and the low level control that the language offers.
 
+== Theoretical Background
+
+Merge Sort is a divide and conquer algorithm that can be easily parallelized. The first step is to divide the array into two halves and recursively solve for each of them. To prove that is better then the sequential version, we need to make some calculation about the time complexity, depth and work of the algorithm.
+
+- Work: $W(n) = 2W(n/2) + O(n) = O(n log n)$ from the Master Theorem, where $O(n)$ is the time taken to merge *sequentially* two sorted arrays and we have two recursive calls.
+- Depth: $D(n) = D(n/2) + O(n) = O(n)$ where $O(n)$ is the time taken to merge *sequentially* two sorted arrays.
+
+
 == Implementation
 
 We started from the classic implementation of the Merge Sort algorithm, which is a divide and conquer algorithm that works by recursively dividing the array into two halves, sorting each half, and then merging the two sorted halves back together. We then added the following `#pragma` directives:
@@ -44,7 +52,6 @@ void parallel_merge_sort(vector<int> &arr, int left, int right, int depth) {
 
 == Performance
 
-In order to measure the performance of out implementation we used the tool *perf* on a Linux machine.
 It's important to note that the performance in this case are highly dependent on the hardware and the specific implementation details. Moreover, we will run the comparison on the same machine to ensure a fair comparison, with the following specifications:
 - CPU: Intel i5-1135G7, 4 cores, 8 threads, 4.2 GHz
 - RAM: 8 GB
@@ -55,7 +62,11 @@ It's important to note that the performance in this case are highly dependent on
   caption: "Comparison of the performance of the parallel merge sort with different number of threads",
 )<fig:comp-4-cpus>
 
-As a first test, we tried comparing the performance of our implementation on the same machine with different number of threads involved (see @fig:comp-4-cpus). The results followed our expectations: as we increase the number of threads, the performance improves. However, we can see that the improvement is decreasing, meaning we have a clear case of what is usually called "diminishing returns".
+As a first test, we tried comparing the performance of our implementation on the same machine with different number of threads involved (see @fig:comp-4-cpus).
+
+To achieve this, we used the #link("https://github.com/google/benchmark")[Google Benchmark library ], which is a microbenchmarking library that allows us to easily measure the performance of our code. The code in @lst:mergesort_benchmark_inside shows the benchmark implementation we used for this test.
+
+The outcomes aligned with our expectations: as the number of threads increases, performance rises. Nonetheless, the rate of improvement gradually declines, clearly illustrating the phenomenon commonly referred to as "diminishing returns".
 
 #figure(caption: "Benchmark of our Parallel Merge Sort implementation.")[
   ```cpp
@@ -78,35 +89,7 @@ As a first test, we tried comparing the performance of our implementation on the
   ```
 ] <lst:mergesort_benchmark_inside>
 
-As we can see from the code in @lst:mergesort_benchmark_inside, the array is generated inside the for loop at line 6, meaning it is generated for each iteration of the benchmark. In order to address this issue, we moved the array generation outside of the benchmark loop, hence generating it only once. The results of this change can be seen in @lst:mergesort_benchmark_outside.
-
-#figure(caption: [Benchmark of our Parallel Merge Sort implementation,
-  with input generation happening only once outside of the loop.
-])[
-  ```cpp
-  static void BM_MergeSort_Optimized(benchmark::State &state) {
-    // Initialize the vector
-    vector<int> arr = init_default_vector(state.range(0));
-
-    omp_set_max_active_levels(32);
-    omp_set_num_threads(state.range(1));
-
-    // Run the benchmark
-    for (auto _ : state) {
-      // Copy the input, and operate on that.
-      vector<int> arr2(arr);
-      #pragma omp parallel
-      {
-        #pragma omp single
-        parallel_merge_sort(arr2, 0, arr2.size() - 1, 0);
-      }
-      benchmark::DoNotOptimize(arr2);
-    }
-  }
-  ```] <lst:mergesort_benchmark_outside>
-
-// #TODO
-From the data collected, we can see that the parallel implementation is significantly faster than the sequential one, especially for very large arrays. The bottleneck seems to be caused by the sequential merge step summed with the low number of threads used.
+As we can see from the code in @lst:mergesort_benchmark_inside, the array is generated inside the for loop at line 6, meaning it is generated for each iteration of the benchmark. In order to address this issue, we moved the array generation outside of the benchmark loop, hence generating it only once.
 
 = Parallel Merge
 
@@ -203,6 +186,8 @@ in C++, considering the edge cases as well.
   ```
 ] <lst:selection-problem-cpp>
 
+In conclusion, we can say that the performance of the selection problem is $O(log(n + m))$ (this will be useful later on for the parallel merge).
+
 == Fully Parallel Merging
 
 Using the method explained in the assignment description,
@@ -262,12 +247,20 @@ void parallel_merge(vector<int> &A, vector<int> &B,
 }
 ```
 
+The main idea is to divide the work among the available threads,
+using the selection problem to find the indices where to split the two arrays. In order to do that, we initialize a support vector for each of the two arrays and one for the merged array, which will contain the indices where to split the arrays. Then, we use a parallel for loop to fill these vectors using the selection problem.
+
+Finally, we use another parallel for loop to merge the two arrays, using the indices we found before because we need to sequentially merge the subarrays.
+
+== Theoretical Considerations
+
+The work of the algorithm is $W(n) = O(n)$, as for one CPU the cost is the same as a sequential merge. But the depth is $D(n) = O(log(n))$, since we cannot parallelize the selection problem, while the merging of the subarrays takes $O(n / p)$ time, where $p$ is the number of processors. Thus, having infinite processors the depth is dominated by the selection problem, which is $O(log(n))$.
+
+In the real world, the number of processors is limited, hence the factor $n / p$ willhave a big impact on the performance of the algorithm. Furthermore, we have that $T(n, p) = O(log(n) + n / p + epsilon) times p$, where $epsilon$ is the overhead due to the parallelization. This means that for small arrays, the overhead will dominate the performance of the algorithm, making it slower than a sequential merge.
+
 == Benchmarking
 
-When we ran some benchmarks on our parallel merge implementation,
-we found it to be _slower_ than the sequential implementation.
-We suppose this could be due to synchronization overhead, or overhead in OpenMP,
-however we were not able to prove our intuition.
+For the reasons explained before, we found our benchmark to be slower then the sequential merge for small arrays. To solve this problem, we added a threshold to the parallel merge function, which will use a sequential merge for small arrays. We found that the optimal threshold is around $2^{14}$ elements.
 The benchmark results can be seen in @fig:merge-sequential-vs-parallel.
 
 #figure(
@@ -322,7 +315,6 @@ to compare it with the previous parallel implementation and the algorithm from t
   caption: "Comparison of performance of the fully parallel merge sort with different number of threads",
 )<fig:fully-parallel-merge-sort>
 
-At first glance, we can observe that the performance seems to respect our expectation reaching an order of magnitude of improvement compared to the algorithm.
 
 #figure(
   image("./BM_StdSort.png", width: 90%),
@@ -346,7 +338,4 @@ We can see that for both single and multiple threads there's a huge gap in perfo
 
 = Conclusion
 
-We encountered some difficulties in the implementation of actually parallel algorithm,
-mainly due to the complexity of OpenMP, the framework we chose.
-In the end, we still managed to implement a fully-parallel Merge Sort implementation
-that beats the `std::sort` implementation found in `libstdc++`, the GNU C++ standard library.
+In conclusion, we can say that we successfully implemented a fully parallel merge sort algorithm using OpenMP. Although our implementation is not as optimized as the standard library one, it is still a good example of how to use parallelization to improve the performance of an algorithm.
