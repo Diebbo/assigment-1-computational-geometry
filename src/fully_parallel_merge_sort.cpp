@@ -3,6 +3,8 @@
 #include <cassert>
 #include <vector>
 
+
+
 void fully_parallel_merge_sort(std::vector<int> &arr, int left, int right,
                                int depth) {
   if (left >= right)
@@ -12,12 +14,19 @@ void fully_parallel_merge_sort(std::vector<int> &arr, int left, int right,
 
 #pragma omp taskgroup
   {
-#pragma omp task shared(arr) untied if (right - left >= (1 << 10))
+#pragma omp task shared(arr) untied if (right - left >= (1 << 9))
     fully_parallel_merge_sort(arr, left, mid, depth + 1);
-#pragma omp task shared(arr) untied if (right - left >= (1 << 10))
+#pragma omp task shared(arr) untied if (right - left >= (1 << 9))
     fully_parallel_merge_sort(arr, mid + 1, right, depth + 1);
+  #pragma omp taskyield
   }
 
+
+  if (right - left < (1 << 10)) {
+    // Use sequential merge for small arrays
+    sequential_merge(arr, left, mid, right);
+    return;
+  }
   std::vector<int> left_vec;
   std::vector<int> right_vec;
   
