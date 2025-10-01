@@ -18,9 +18,9 @@ void fully_parallel_merge_sort(std::vector<int> &arr, int left, int right,
 
 #pragma omp taskgroup
   {
-#pragma omp task shared(arr) untied if (right - left >= (1 << 12))
+#pragma omp task shared(arr) untied if (right - left >= (1 << 10))
     fully_parallel_merge_sort(arr, left, mid, depth + 1);
-#pragma omp task shared(arr) untied if (right - left >= (1 << 12))
+#pragma omp task shared(arr) untied if (right - left >= (1 << 10))
     fully_parallel_merge_sort(arr, mid + 1, right, depth + 1);
   }
   // create the two vectors to merge
