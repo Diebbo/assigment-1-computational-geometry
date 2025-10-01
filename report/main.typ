@@ -168,48 +168,50 @@ We can use this idea to solve the selection problem in $O(log n)$ time using a s
       },
     )
   },
-)
+) <selection-problem-alg>
 
-The following code implements the above algorithm in C++, considering the edge cases as well:
+The code in @lst:selection-problem-cpp implements @selection-problem-alg
+in C++, considering the edge cases as well.
 
-```cpp
-pair<int, int> selection_problem(const vector<int> &A,
-                              const vector<int> &B, int k) {
-    int n = A.size();
-    int m = B.size();
+#figure(caption: "Selection problem implementation in C++")[
+  ```cpp
+  pair<int, int> selection_problem(vector<int> &A, vector<int> &B, int k) {
+      int n = A.size();
+      int m = B.size();
 
-    if (k >= n + m) return {n, m};
-    if (k <= 0) return {0, 0};
+      if (k >= n + m) return {n, m};
+      if (k <= 0) return {0, 0};
 
-    int a_min = max(0, k - m);
-    int l = a_min;
-    int r = min(k, n);
+      int a_min = max(0, k - m);
+      int l = a_min;
+      int r = min(k, n);
 
-    while (l < r) {
-        int a = l + (r - l) / 2;
-        int b = k - a;
+      while (l < r) {
+          int a = l + (r - l) / 2;
+          int b = k - a;
 
-        if (a > a_min && A[a - 1] > B[b]) {
-            r = a - 1;
-        } else if (B[b - 1] > A[a]) {
-            l = a + 1;
-        } else {
-            return {a, b};
-        }
-    }
-    return {l, k - l};
-}
-```
+          if (a > a_min && A[a - 1] > B[b]) {
+              r = a - 1;
+          } else if (B[b - 1] > A[a]) {
+              l = a + 1;
+          } else {
+              return {a, b};
+          }
+      }
+      return {l, k - l};
+  }
+  ```
+] <lst:selection-problem-cpp>
 
 == Fully Parallel Merging
 
-Using the method explained in the pdf, we can merge two sorted arrays in parallel. The following code in C++ implements that method:
+Using the method explained in the assignment description,
+we can merge two sorted arrays in parallel.
+The following code in C++ implements that method:
 
 ```cpp
-
 void parallel_merge(vector<int> &A, vector<int> &B,
                     vector<int> &C, int offset) {
-
   int n = A.size() + B.size();
   int num_threads = omp_get_max_threads();
 
@@ -258,16 +260,25 @@ void parallel_merge(vector<int> &A, vector<int> &B,
 
   }
 }
-
 ```
 
 == Benchmarking
 
+When we ran some benchmarks on our parallel merge implementation,
+we found it to be _slower_ than the sequential implementation.
+We suppose this could be due to synchronization overhead, or overhead in OpenMP,
+however we were not able to prove our intuition.
+The benchmark results can be seen in @fig:merge-sequential-vs-parallel.
 
+#figure(
+  caption: "Performance comparison between the sequential and parallel benchmark implementations",
+  image("BM_SequentialMerge vs BM_ParallelMerge.png"),
+) <fig:merge-sequential-vs-parallel>
 
 = Fully Parallel Merge Sort
 
-To round off, we can combine all the techniques explained so far to obtain a fully parallel merge sort algorithm. The following code implements it:
+We can combine all the techniques explained so far to obtain a fully parallel merge sort algorithm.
+The following code implements it:
 
 ```cpp
 void fully_parallel_merge_sort(vector<int> &arr, int left, int right,
@@ -303,7 +314,8 @@ void fully_parallel_merge_sort(vector<int> &arr, int left, int right,
 
 == Benchmarking
 
-To test the performance of our implementation, we used the same benchmarking framework as before, to compare it with the previous parallel implementation and the algorithm from the standard library.
+To test the performance of our implementation, we used the same benchmarking framework as before,
+to compare it with the previous parallel implementation and the algorithm from the standard library.
 
 #figure(
   image("./fpms-cpus-comparison-random-array.png", width: 90%),
@@ -333,3 +345,8 @@ At the same time it's important to notice that in our performance graph (see @fi
 We can see that for both single and multiple threads there's a huge gap in performance between our implementation and the standard library one. We were expecting this behavior, since the standard library implementation is highly optimized and uses various techniques to improve performance, such as insertion sort for small arrays and other low-level optimizations.
 
 = Conclusion
+
+We encountered some difficulties in the implementation of actually parallel algorithm,
+mainly due to the complexity of OpenMP, the framework we chose.
+In the end, we still managed to implement a fully-parallel Merge Sort implementation
+that beats the `std::sort` implementation found in `libstdc++`, the GNU C++ standard library.

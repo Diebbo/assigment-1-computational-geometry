@@ -1,6 +1,7 @@
 #include "../merge_sort.hpp"
 #include "../util.hpp"
 
+#include <algorithm>
 #include <benchmark/benchmark.h>
 #include <cstdlib>
 #include <ctime>
@@ -92,6 +93,57 @@ static void BM_FullyParallelMergeSort(benchmark::State &state) {
   }
 }
 BENCHMARK(BM_FullyParallelMergeSort)
+    ->RangeMultiplier(2)
+    ->Ranges({{8, 8 << 18}, {1, 8}})
+    ->MeasureProcessCPUTime()
+    ->UseRealTime();
+
+// Benchmark sequential_merge
+static void BM_SequentialMerge(benchmark::State &state) {
+  // Initialize the vectors
+  std::vector<int> left = init_default_vector(state.range(0) / 2);
+  std::vector<int> right = init_default_vector(state.range(0) / 2);
+  std::vector<int> arr(state.range(0));
+  std::sort(left.begin(), left.end());
+  std::sort(right.begin(), right.end());
+  arr.insert(arr.end(), left.begin(), left.end());
+  arr.insert(arr.end(), right.begin(), right.end());
+
+  // Run the benchmark
+  for (auto _ : state) {
+    std::vector<int> arr2(arr);
+    sequential_merge(arr2, 0, left.size() - 1, arr.size() - 1);
+    benchmark::DoNotOptimize(arr2);
+  }
+}
+BENCHMARK(BM_SequentialMerge)
+    ->RangeMultiplier(2)
+    ->Ranges({{8, 8 << 18}})
+    ->MeasureProcessCPUTime()
+    ->UseRealTime();
+
+// Benchmark parallel_merge
+static void BM_ParallelMerge(benchmark::State &state) {
+  // Initialize the vectors
+  std::vector<int> left = init_default_vector(state.range(0) / 2);
+  std::vector<int> right = init_default_vector(state.range(0) / 2);
+  std::vector<int> arr(state.range(0));
+  std::sort(left.begin(), left.end());
+  std::sort(right.begin(), right.end());
+
+  // Run the benchmark
+  for (auto _ : state) {
+    std::vector<int> left2(left);
+    std::vector<int> right2(right);
+    #pragma omp parallel
+    {
+      #pragma omp single
+      parallel_merge(left2, right2, arr);
+    }
+    benchmark::DoNotOptimize(arr);
+  }
+}
+BENCHMARK(BM_ParallelMerge)
     ->RangeMultiplier(2)
     ->Ranges({{8, 8 << 18}, {1, 8}})
     ->MeasureProcessCPUTime()
