@@ -51,7 +51,7 @@ It's important to note that the performance in this case are highly dependent on
 - OS: Arch Linux - Kernel 6.16.7-arch1-1
 
 #figure(
-  image("./bench_result_spms.png", width: 90%),
+  image("./BM_MergeSort.png", width: 90%),
   caption: "Comparison of the performance of the parallel merge sort with different number of threads",
 )<fig:comp-4-cpus>
 
@@ -313,7 +313,7 @@ To test the performance of our implementation, we used the same benchmarking fra
 At first glance, we can observe that the performance seems to respect our expectation reaching an order of magnitude of improvement compared to the algorithm.
 
 #figure(
-  image("./std-sort.png", width: 90%),
+  image("./BM_StdSort.png", width: 90%),
   caption: "standard library sort performance",
 )<fig:fully-parallel-merge-sort-sorted>
 
