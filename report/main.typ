@@ -368,6 +368,16 @@ We can see the benchmark in figure @fig:new-parallel-merge-sort, where we can se
   caption: "Comparison of performance of the new parallel merge sort with different number of threads",
 )<fig:new-parallel-merge-sort>
 
+We also executed a benchmark with a new machine, with the following specifications:
+- CPU: AMD Ryzen AI 9 HX 370, 12 cores, 24 threads, 5.1 GHz
+- RAM: 32 GB
+- OS: Arch Linux - Kernel 6.12.49-1-lts
+The results can be seen in @fig:new-fully-parallel-merge-sort-gioele.
+#figure(
+  image("./full_comp_merge_gioele.png", width: 90%),
+  caption: "Comparison of performance of the new fully parallel merge algorithm, the previous implementation and the sequential merge with different number of threads",
+)<fig:new-fully-parallel-merge-sort-gioele>
+
 = Conclusion
 
 In this project, we set out to design, implement, and analyze a fully parallel merge sort algorithm using C++ and OpenMP. Starting from the classical sequential merge sort, we progressively introduced parallelism first in the recursive decomposition phase and later in the merging step, eventually arriving at a fully parallel solution.

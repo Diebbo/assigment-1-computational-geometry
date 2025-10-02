@@ -150,7 +150,7 @@ static void bm_parallel_merge(benchmark::State &state) {
     #pragma omp parallel
     {
       #pragma omp single
-      new_parallel_merge(left2, 0, left2.size()-1, right2, 0, right2.size()-1, arr, 0);
+      parallel_merge(left, right, arr);
     }
     benchmark::DoNotOptimize(arr);
   }
@@ -178,7 +178,7 @@ static void bm_new_parallel_merge(benchmark::State &state) {
     #pragma omp parallel
     {
       #pragma omp single
-      parallel_merge(left, right, arr);
+      new_parallel_merge(left2, 0, left2.size()-1, right2, 0, right2.size()-1, arr, 0);
     }
     benchmark::DoNotOptimize(arr);
   }
