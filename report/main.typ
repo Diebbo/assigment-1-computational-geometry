@@ -322,7 +322,52 @@ At the same time it's important to notice that in our performance graph (see @fi
   caption: "standard library sort performance zoomed in",
 )<fig:fully-parallel-merge-sort-sorted-zoomed>
 
-We can see that for both single and multiple threads there's a huge gap in performance between our implementation and the standard library one. We were expecting this behavior, since the standard library implementation is highly optimized and uses various techniques to improve performance, such as insertion sort for small arrays and other low-level optimizations.
+We can see that for both single and multiple threads there's a huge gap in performance between our implementation and the standard library one. We were expecting this behavior, since the standard library implementation is highly optimized and uses various techniques to improve performance, such as insertion sort for small arrays and other low-level optimizations, while our implementation of the parallel merge is not optimized, expecially because using taskloop inside a parallelized recursive function seems counterproductive in OpenMP.
+
+= New parallel merge
+
+We tried implementing a new version of the parallel merge, which uses a different approach to divide the work among the threads. The idea is to use a recursive approach to divide the two arrays into smaller subarrays, until we reach a base case where we can merge the two subarrays sequentially. This approach has a better depth, since we can parallelize the selection problem as well.
+
+
+```cpp
+void new_parallel_merge(const std::vector<int> &A, int a_start, int a_end,
+                        const std::vector<int> &B, int b_start, int b_end,
+                        std::vector<int> &C, int c_start) {
+  int a_len = a_end - a_start + 1;
+  int b_len = b_end - b_start + 1;
+
+  if (a_len < b_len) {
+    return new_parallel_merge(B, b_start, b_end, A, a_start, a_end, C, c_start);
+  }
+
+  if (a_len == 0)
+    return;
+
+  if (a_len + b_len <= MERGE_THRESHOLD) {
+    std::merge(A.begin() + a_start, A.begin() + a_end + 1, B.begin() + b_start,
+               B.begin() + b_end + 1, C.begin() + c_start);
+    return;
+  }
+
+  int a_mid = a_start + a_len / 2;
+  int b_mid =
+      std::lower_bound(B.begin() + b_start, B.begin() + b_end + 1, A[a_mid]) -
+      B.begin();
+  int c_mid = c_start + (a_mid - a_start) + (b_mid - b_start);
+
+  C[c_mid] = A[a_mid];
+
+#pragma omp task shared(A, B, C)
+  new_parallel_merge(A, a_start, a_mid - 1, B, b_start, b_mid - 1, C, c_start);
+
+#pragma omp task shared(A, B, C)
+  new_parallel_merge(A, a_mid + 1, a_end, B, b_mid, b_end, C, c_mid + 1);
+
+#pragma omp taskwait
+}
+```
+
+We can see the benchmark in figure
 
 = Conclusion
 
