@@ -148,7 +148,37 @@ static void BM_ParallelMerge(benchmark::State &state) {
 }
 BENCHMARK(BM_ParallelMerge)
     ->RangeMultiplier(2)
-    ->Ranges({{8, 8 << 18}})
+    ->Ranges({{8, 8 << 18}, {1, 8}})
+    ->MeasureProcessCPUTime()
+    ->UseRealTime();
+
+// Benchmark parallel_merge_new
+static void BM_ParallelMergeNew(benchmark::State &state) {
+  omp_set_max_active_levels(omp_get_max_active_levels());
+  omp_set_num_threads(state.range(1));
+
+  // Initialize the vectors
+  std::vector<int> left = init_default_vector(state.range(0) / 2);
+  std::vector<int> right = init_default_vector(state.range(0) / 2);
+  std::vector<int> arr(state.range(0));
+  std::sort(left.begin(), left.end());
+  std::sort(right.begin(), right.end());
+
+  // Run the benchmark
+  for (auto _ : state) {
+    std::vector<int> left2(left);
+    std::vector<int> right2(right);
+    #pragma omp parallel
+    {
+      #pragma omp single
+      new_parallel_merge(left2, 0, left2.size()-1, right2, 0, right2.size()-1, arr, 0);
+    }
+    benchmark::DoNotOptimize(arr);
+  }
+}
+BENCHMARK(BM_ParallelMergeNew)
+    ->RangeMultiplier(2)
+    ->Ranges({{8, 8 << 18}, {1, 8}})
     ->MeasureProcessCPUTime()
     ->UseRealTime();
 
