@@ -157,6 +157,9 @@ typedef std::vector<int> vec;
 
 // Benchmark parallel_merge
 static void bm_parallel_merge(benchmark::State &state) {
+  omp_set_max_active_levels(omp_get_max_active_levels());
+  omp_set_num_threads(state.range(1));
+
   // Initialize a single vector already sorted
   vec arr = init_sorted_vector(state.range(0));
   vec left(arr.begin(), arr.begin() + arr.size() / 2);
@@ -182,6 +185,9 @@ BENCHMARK(bm_parallel_merge)
     ->UseRealTime();
 
 static void bm_parallel_merge_worst(benchmark::State &state) {
+  omp_set_max_active_levels(omp_get_max_active_levels());
+  omp_set_num_threads(state.range(1));
+
   // Initialize a single vector already sorted, but this time i swap them
   vec arr = init_sorted_vector(state.range(0));
   vec left(arr.begin(), arr.begin() + arr.size() / 2);
@@ -221,7 +227,7 @@ static void bm_sequential_merge(benchmark::State &state) {
 }
 BENCHMARK(bm_sequential_merge)
     ->RangeMultiplier(2)
-    ->Ranges({{8, 8 << 18}, {1, 1}})
+    ->Range(8, 8 << 18)
     ->MeasureProcessCPUTime()
     ->UseRealTime();
 
