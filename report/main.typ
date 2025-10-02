@@ -365,4 +365,22 @@ We can see the benchmark in figure
 
 = Conclusion
 
-In conclusion, we can say that we successfully implemented a fully parallel merge sort algorithm using OpenMP. Although our implementation is not as optimized as the standard library one, it is still a good example of how to use parallelization to improve the performance of an algorithm.
+In this project, we set out to design, implement, and analyze a fully parallel merge sort algorithm using C++ and OpenMP. Starting from the classical sequential merge sort, we progressively introduced parallelism first in the recursive decomposition phase and later in the merging step, eventually arriving at a fully parallel solution.
+
+From a theoretical standpoint, we analyzed the work and depth of the parallel merge sort. While the total work remains $O(n log n)$—identical to the sequential algorithm—the parallel version achieves a depth of $O(log^2 n)$ in the fully parallelized version, with the merge step itself having depth $O(log n)$. This highlights the potential speedup achievable when sufficient hardware resources are available, while also clarifying the inherent limitations due to factors such as synchronization and sequential components (e.g., selection sub problems).
+
+On the implementation side, we experimented with multiple strategies to introduce parallelism. Our first approach applied OpenMP tasks directly to recursive calls, followed by a task-based parallel merge relying on the selection problem. We then explored an alternative recursive parallel merge that allowed for better task granularity and more efficient use of threads. These explorations demonstrated both the strengths and pitfalls of OpenMP in recursive algorithms, in particular the overhead introduced by taskloop constructs in deeply nested calls.
+
+The benchmarking phase provided valuable insights. Using Google Benchmark on a controlled hardware setup, we compared sequential, partially parallel, and fully parallel implementations. The results confirmed the theoretical predictions:
+
+For small input sizes, the overhead of task creation and synchronization outweighed the benefits of parallelism, making the sequential version faster.
+
+For medium to large input sizes, parallelism yielded significant speedups, though with diminishing returns as the number of threads increased—a consequence of Amdahl’s law and the overhead $epsilon(p)$ associated with parallel execution.
+
+When compared against the standard library sort, our implementation performed worse across most scenarios. This was expected, given that the standard library leverages decades of optimization, hybrid strategies (e.g., insertion sort for small partitions), and low-level performance tuning, whereas our focus was on correctness and parallelism rather than fine-grained optimization.
+
+Overall, the project demonstrates how parallel computing can be applied to classical algorithms, offering both practical improvements in certain scenarios and a deeper understanding of the trade-offs involved. While our implementation cannot compete with highly optimized production-level algorithms, it fulfills its role as a pedagogical exploration of algorithmic parallelization.
+
+Looking ahead, several improvements and extensions could be considered. These include tuning thresholds for hybrid sequential/parallel execution, experimenting with work-stealing schedulers to better balance load across threads, and investigating SIMD or GPU-based implementations for additional performance gains.
+
+In conclusion, this work illustrates not only the potential but also the challenges of parallel algorithm design: careful consideration of theoretical complexity, hardware constraints, and parallelization overheads is essential to achieving meaningful improvements.
