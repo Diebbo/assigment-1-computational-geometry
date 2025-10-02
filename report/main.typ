@@ -24,7 +24,7 @@ Merge Sort is a divide and conquer algorithm that can be easily parallelized. Th
 
 - Work: $W(n) = 2W(n/2) + O(n) = O(n log n)$ from the Master Theorem, where $O(n)$ is the time taken to merge *sequentially* two sorted arrays and we have two recursive calls.
 - Depth: $D(n) = D(n/2) + O(n) = O(n)$ where $O(n)$ is the time taken to merge *sequentially* two sorted arrays.
-
+- By the Brent's Scheduling Algorithm, we expect that $T(n, p) = O((log n) / p + n)$, where $p$ is the number of processors.
 
 == Implementation
 
@@ -298,6 +298,13 @@ void fully_parallel_merge_sort(vector<int> &arr, int left, int right) {
   parallel_merge(left_vec, right_vec, arr, left);
 }
 ```
+
+== Theoretical Background
+
+- Work: $W(n) = 2W(n/2) + O(n) = O(n log n)$ from the Master Theorem, where $O(n)$ is the time taken to merge *with a single thread* two sorted arrays.
+- Depth: $D(n) = D(n/2) + O(log n) = O(log^2 n)$ where $O(log n)$ is the time taken to merge *parallelly* two sorted arrays.
+- By the Brent's Scheduling Algorithm, we expect that $T(n, p) = O((n log n) / p + log^2 n)$, where $p$ is the number of processors.
+
 
 == Benchmarking
 
