@@ -321,8 +321,7 @@ We can see that for both single and multiple threads there's a huge gap in perfo
 
 = New parallel merge
 
-We tried implementing a new version of the parallel merge, which uses a different approach to divide the work among the threads. The idea is to use a recursive approach to divide the two arrays into smaller subarrays, until we reach a base case where we can merge the two subarrays sequentially. This approach has a better depth, since we can parallelize the selection problem as well.
-
+We tried implementing a new version of the parallel merge, which uses a different approach to divide the work among the threads. The idea is to use a recursive approach to divide the two arrays into smaller subarrays, until we reach a base case where we can merge the two subarrays sequentially.
 
 ```cpp
 void new_parallel_merge(const std::vector<int> &A, int a_start, int a_end,
