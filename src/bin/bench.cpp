@@ -161,7 +161,7 @@ BENCHMARK(bm_parallel_merge)
     ->MeasureProcessCPUTime()
     ->UseRealTime();
 
-static void bm_parallel_merge_worst(benchmark::State &state) {
+static void bm_new_parallel_merge(benchmark::State &state) {
   omp_set_max_active_levels(omp_get_max_active_levels());
   omp_set_num_threads(state.range(1));
 
@@ -178,12 +178,12 @@ static void bm_parallel_merge_worst(benchmark::State &state) {
     #pragma omp parallel
     {
       #pragma omp single
-      new_parallel_merge(right2, 0, right2.size(), left2, 0, left2.size(), arr, 0);
+      parallel_merge(left, right, arr);
     }
     benchmark::DoNotOptimize(arr);
   }
 }
-BENCHMARK(bm_parallel_merge_worst)
+BENCHMARK(bm_new_parallel_merge)
     ->RangeMultiplier(2)
     ->Ranges({{8, 8 << 18}, {1, 8}})
     ->MeasureProcessCPUTime()

@@ -264,7 +264,7 @@ For the reasons explained before, we found our benchmark to be slower then the s
 The benchmark results can be seen in @fig:merge-sequential-vs-parallel.
 
 #figure(
-  caption: "Performance comparison between the sequential and parallel benchmark implementations",
+  caption: "Performance comparison between the sequential and parallel merge implementations",
   image("BM_SequentialMerge vs BM_ParallelMerge.png"),
 ) <fig:merge-sequential-vs-parallel>
 
@@ -305,21 +305,16 @@ To test the performance of our implementation, we used the same benchmarking fra
 to compare it with the previous parallel implementation and the algorithm from the standard library.
 
 #figure(
-  image("./fpms-cpus-comparison-random-array.png", width: 90%),
+  image("./full_parallel_alone.png", width: 90%),
   caption: "Comparison of performance of the fully parallel merge sort with different number of threads",
 )<fig:fully-parallel-merge-sort>
 
 At the same time it's important to notice that in our performance graph (see @fig:fully-parallel-merge-sort) for some small inputs there's a plateau in performance. Let's zoom in on that part of the graph to understand better what's going on.
 
 #figure(
-  grid(
-    columns: 2,
-    // 2 means 2 auto-sized columns
-    gutter: 2mm,
-    // space between columns
-    image("./smaller-resoults-fully-parallel.png"), image("./smaller-resoults-standard-sort.png"),
-  ),
-  caption: "standard library sort performance zoomed in",
+
+  image("./fpms-cpus-comparison-random-array.png", width: 90%),
+  caption: "comparison of performance of the fully parallel merge sort with different number of threads and std (log scale)",
 )<fig:fully-parallel-merge-sort-sorted-zoomed>
 
 We can see that for both single and multiple threads there's a huge gap in performance between our implementation and the standard library one. We were expecting this behavior, since the standard library implementation is highly optimized and uses various techniques to improve performance, such as insertion sort for small arrays and other low-level optimizations, while our implementation of the parallel merge is not optimized, expecially because using taskloop inside a parallelized recursive function seems counterproductive in OpenMP.
