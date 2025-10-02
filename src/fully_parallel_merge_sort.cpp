@@ -99,14 +99,6 @@ void new_parallel_mergesort(std::vector<int> &A) {
 void fully_parallel_merge_sort(std::vector<int> &arr, int left, int right,
                                int depth) {
 
-  // std::vector<int> B(arr.size());
-
-  // new_parallel_mergesort_rec(arr, B, 0, arr.size() - 1, true);
-  // // if (!std::is_sorted(arr.begin(), arr.end()))
-  // //   std::copy(B.begin(), B.end(), arr.begin());
-
-  // return;
-
   if (left >= right)
     return;
 
@@ -129,12 +121,8 @@ void fully_parallel_merge_sort(std::vector<int> &arr, int left, int right,
 
   std::vector<int> left_vec;
   std::vector<int> right_vec;
-
   left_vec.assign(arr.begin() + left, arr.begin() + mid + 1);
   right_vec.assign(arr.begin() + mid + 1, arr.begin() + right + 1);
-
-  //parallel_merge(left_vec, right_vec, arr, left);
-
 
   new_parallel_merge(left_vec, 0, left_vec.size() - 1, right_vec, 0, right_vec.size() - 1, arr, left);
 }

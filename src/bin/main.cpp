@@ -41,16 +41,6 @@ int main(int argc, char *argv[]) {
   else if (strcmp(problem->name_long, "fully-parallel-msort") == 0) 
     handle_fully_parallel_merge_sort(n);
 
-  // read the numbers from command line
-  //   a = read_input(n, &argv[2]);
-  // } else {
-  //   // Fill & shuffle array
-  //   a = init_default_vector(n);
-  // }
-  //
-  // printf("Unsorted array:\n");
-  // printArray(a);
-
   if (flag_result *f = get_flag_value("multithread"); f != nullptr) 
     omp_set_num_threads(4);
   if (flag_result *f = get_flag_value("nested"); f != nullptr) 
@@ -105,8 +95,6 @@ void handle_fully_parallel_merge_sort(int n) {
   a = init_default_vector(n);
 
   fully_parallel_merge_sort(a, 0, a.size() - 1);
-  // std::vector<int> merged(n);
-  // parallel_merge(left, right, merged);
   assert(std::is_sorted(a.begin(), a.end()) && "Array is not sorted!");
   printf("Array successfully sorted\n");
 }
