@@ -6,11 +6,6 @@
 const int MERGE_THRESHOLD = 10000;
 const int SORT_THRESHOLD = 1000;
 
-// Serial sort fallback
-void serial_sort(std::vector<int> &A, int start, int end) {
-  std::sort(A.begin() + start, A.begin() + end + 1);
-}
-
 // Parallel merge: binary search + task decomposition
 void new_parallel_merge(const std::vector<int> &A, int a_start, int a_end,
                         const std::vector<int> &B, int b_start, int b_end,
