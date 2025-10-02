@@ -8,30 +8,7 @@
 #include <omp.h>
 
 // Benchmark parallel_merge_sort
-static void BM_MergeSort(benchmark::State &state) {
-  omp_set_max_active_levels(32);
-  omp_set_num_threads(state.range(1));
-
-  // Run the benchmark
-  for (auto _ : state) {
-    // Initialize the vector
-    std::vector<int> arr = init_default_vector(state.range(0));
-    #pragma omp parallel
-    {
-      #pragma omp single
-      parallel_merge_sort(arr, 0, arr.size() - 1, 0);
-    }
-    benchmark::DoNotOptimize(arr);
-  }
-}
-BENCHMARK(BM_MergeSort)
-    ->RangeMultiplier(2)
-    ->Ranges({{8, 8 << 18}, {1, 8}})
-    ->MeasureProcessCPUTime()
-    ->UseRealTime();
-
-// Benchmark parallel_merge_sort, only generating the input once
-static void BM_MergeSort_Optimized(benchmark::State &state) {
+static void BM_ParallelMergeSort(benchmark::State &state) {
   omp_set_max_active_levels(32);
   omp_set_num_threads(state.range(1));
 
@@ -49,7 +26,7 @@ static void BM_MergeSort_Optimized(benchmark::State &state) {
     benchmark::DoNotOptimize(arr2);
   }
 }
-BENCHMARK(BM_MergeSort_Optimized)
+BENCHMARK(BM_ParallelMergeSort)
     ->RangeMultiplier(2)
     ->Ranges({{8, 8 << 18}, {1, 8}})
     ->MeasureProcessCPUTime()
