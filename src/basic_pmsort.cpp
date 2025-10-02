@@ -8,7 +8,7 @@ void printArray(const std::vector<int> &arr) {
 }
 
 // Merge two sorted halves
-void merge(std::vector<int> &arr, int left, int mid, int right) {
+void sequential_merge(std::vector<int> &arr, int left, int mid, int right) {
   int n1 = mid - left + 1;
   int n2 = right - mid;
 
@@ -49,7 +49,7 @@ void parallel_merge_sort(std::vector<int> &arr, int left, int right,
     parallel_merge_sort(arr, mid + 1, right, depth + 1);
   }
 
-  merge(arr, left, mid, right);
+  sequential_merge(arr, left, mid, right);
 }
 
 std::vector<int> read_input(int n, char *inputs[]) {

@@ -8,7 +8,10 @@ import time
 
 def generate_shuffle_array(size):
     """Generates an array of random integers of given size, no duplicates"""
-    array = list(range(size))
+    array = set()
+    while len(array) < size:
+        array.add(random.randrange(0, 2**31))
+    array = list(array)
     random.shuffle(array)
     return array
 
@@ -28,6 +31,9 @@ def main():
     )
     parser.add_argument(
         "-n", "--size", type=int, required=True, help="Size of the array to generate."
+    )
+    parser.add_argument(
+        "-s", "--sorted", help="Output a sorted array.", action=argparse.BooleanOptionalAction
     )
     parser.add_argument(
         "-o",
@@ -50,6 +56,8 @@ def main():
 
     start_time = time.time()
     array = generate_shuffle_array(size)
+    if args.sorted:
+        array.sort()
     write_array_to_file(array, output_file)
     end_time = time.time()
 

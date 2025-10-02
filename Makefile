@@ -1,21 +1,45 @@
-CFLAGS := -O3
-CPPFLAGS := -std=c++17 -fopenmp -g -I/opt/homebrew/include -O3
-LDFLAGS := -L/opt/homebrew/lib
+.SUFFIXES:
+.PHONY: all, clean, tests, bench
 
-all: out/basic_pmsort out/bench
+CPPFLAGS += -std=c++17 -fopenmp -O3
+LDFLAGS += -fopenmp -lbenchmark
 
-.PHONY: bench
-bench: out/bench
-	python3 src/scripts/array_generator.py -o /tmp/data.txt -n 100000
-	out/bench --benchmark_out=./out/bench_result.json --benchmark_out_format=json --benchmark_filter=BM_MergeSort
+SRCS      = $(wildcard src/*.cpp)
+TESTSRCS  = $(wildcard test/*.cpp)
+OBJS      = $(patsubst %.cpp, out/%.o, $(SRCS))
+TESTOBJS  = $(patsubst test/%.cpp, out/test/%.o, $(TESTSRCS))
+EXECS     = out/bench out/main out/tests
 
-out/basic_pmsort: src/basic_pmsort.cpp src/main.cpp src/util.cpp | out
-	$(CXX) $(CPPFLAGS) $(LDFLAGS) -o $@ $^
-out/bench: src/basic_pmsort.cpp src/bench.cpp src/util.cpp | out
-	$(CXX) $(CPPFLAGS) $(LDFLAGS) -lbenchmark -o $@ $^
-
-out:
-	mkdir -p out
+# === PHONY TARGETS ===
+all: $(EXECS)
 
 clean:
 	rm -rf out
+
+tests: out/tests
+	out/tests
+
+bench: out/bench
+
+fullbench: out/bench
+	python3 src/scripts/array_generator.py -o /tmp/data.txt -n 2097152
+	out/bench --benchmark_out=./out/bench_result_fpms.json --benchmark_out_format=json --benchmark_filter=BM_FullyParallelMergeSort
+	out/bench --benchmark_out=./out/bench_result_spms.json --benchmark_out_format=json --benchmark_filter=BM_MergeSort
+	python3 src/scripts/array_generator.py -o /tmp/sorted.txt -n 2097152 -s
+	out/bench --benchmark_out=./out/bench_result_fpms_sorted.json --benchmark_out_format=json --benchmark_filter=BM_Selection
+
+# === Executables ===
+out/bench: $(OBJS) out/src/bin/bench.o
+	$(CXX) $(LDFLAGS) -o $@ $^
+out/main: $(OBJS) out/src/bin/main.o
+	$(CXX) $(LDFLAGS) -o $@ $^
+out/tests: $(OBJS) $(TESTOBJS)
+	$(CXX) $(LDFLAGS) -o $@ $^
+
+# === Objects ===
+out/src/%.o: src/%.cpp
+	@mkdir -p $(shell dirname $@)
+	$(CXX) $(CPPFLAGS) -c -o $@ $^
+out/test/%.o: test/%.cpp
+	@mkdir -p $(shell dirname $@)
+	$(CXX) $(CPPFLAGS) -c -o $@ $^
