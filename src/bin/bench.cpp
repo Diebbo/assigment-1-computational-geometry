@@ -152,17 +152,16 @@ BENCHMARK(BM_ParallelMerge)
     ->MeasureProcessCPUTime()
     ->UseRealTime();
 
-// Benchmark parallel_merge_new
-static void BM_ParallelMergeNew(benchmark::State &state) {
-  omp_set_max_active_levels(omp_get_max_active_levels());
-  omp_set_num_threads(state.range(1));
+typedef std::vector<int> vec;
 
-  // Initialize the vectors
-  std::vector<int> left = init_default_vector(state.range(0) / 2);
-  std::vector<int> right = init_default_vector(state.range(0) / 2);
-  std::vector<int> arr(state.range(0));
-  std::sort(left.begin(), left.end());
-  std::sort(right.begin(), right.end());
+
+// Benchmark parallel_merge
+static void bm_parallel_merge(benchmark::State &state) {
+  // Initialize a single vector already sorted
+  vec arr = init_sorted_vector(state.range(0));
+  vec left(arr.begin(), arr.begin() + arr.size() / 2);
+  vec right(arr.begin() + arr.size() / 2, arr.end());
+ 
 
   // Run the benchmark
   for (auto _ : state) {
@@ -176,9 +175,53 @@ static void BM_ParallelMergeNew(benchmark::State &state) {
     benchmark::DoNotOptimize(arr);
   }
 }
-BENCHMARK(BM_ParallelMergeNew)
+BENCHMARK(bm_parallel_merge)
     ->RangeMultiplier(2)
     ->Ranges({{8, 8 << 18}, {1, 8}})
+    ->MeasureProcessCPUTime()
+    ->UseRealTime();
+
+static void bm_parallel_merge_worst(benchmark::State &state) {
+  // Initialize a single vector already sorted, but this time i swap them
+  vec arr = init_sorted_vector(state.range(0));
+  vec left(arr.begin(), arr.begin() + arr.size() / 2);
+  vec right(arr.begin() + arr.size() / 2, arr.end());
+ 
+
+  // Run the benchmark
+  for (auto _ : state) {
+    std::vector<int> left2(left);
+    std::vector<int> right2(right);
+    #pragma omp parallel
+    {
+      #pragma omp single
+      new_parallel_merge(right2, 0, right2.size(), left2, 0, left2.size(), arr, 0);
+    }
+    benchmark::DoNotOptimize(arr);
+  }
+}
+BENCHMARK(bm_parallel_merge_worst)
+    ->RangeMultiplier(2)
+    ->Ranges({{8, 8 << 18}, {1, 8}})
+    ->MeasureProcessCPUTime()
+    ->UseRealTime();
+
+
+// Benchmark parallel_merge
+static void bm_sequential_merge(benchmark::State &state) {
+  // Initialize a single vector already sorted
+  vec arr = init_sorted_vector(state.range(0));
+ 
+  // Run the benchmark
+  for (auto _ : state) {
+    vec arr2(arr);
+    sequential_merge(arr, 0, arr.size() / 2 - 1, arr.size() - 1);
+    benchmark::DoNotOptimize(arr);
+  }
+}
+BENCHMARK(bm_sequential_merge)
+    ->RangeMultiplier(2)
+    ->Ranges({{8, 8 << 18}, {1, 1}})
     ->MeasureProcessCPUTime()
     ->UseRealTime();
 

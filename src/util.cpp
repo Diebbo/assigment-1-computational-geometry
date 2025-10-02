@@ -13,3 +13,10 @@ std::vector<int> init_default_vector(int n) {
                std::default_random_engine(time(nullptr)));
   return arr;
 }
+
+std::vector<int> init_sorted_vector(int n) {
+  std::vector<int> arr(n);
+  for (int i = 0; i < n; i++)
+    arr[i] = i + 1;
+  return arr;
+}
