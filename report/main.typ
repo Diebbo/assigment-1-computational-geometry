@@ -361,7 +361,12 @@ void new_parallel_merge(const std::vector<int> &A, int a_start, int a_end,
 }
 ```
 
-We can see the benchmark in figure
+We can see the benchmark in figure @fig:new-parallel-merge-sort, where we can see that the performance is better than the previous implementation and sequential merge.
+
+#figure(
+  image("./best_case_merge.png", width: 90%),
+  caption: "Comparison of performance of the new parallel merge sort with different number of threads",
+)<fig:new-parallel-merge-sort>
 
 = Conclusion
 
