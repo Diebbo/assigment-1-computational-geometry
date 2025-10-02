@@ -309,13 +309,7 @@ to compare it with the previous parallel implementation and the algorithm from t
   caption: "Comparison of performance of the fully parallel merge sort with different number of threads",
 )<fig:fully-parallel-merge-sort>
 
-
-#figure(
-  image("./BM_StdSort.png", width: 90%),
-  caption: "standard library sort performance",
-)<fig:fully-parallel-merge-sort-sorted>
-
-At the same time it's important to notice that in our performance graph (see @fig:fully-parallel-merge-sort-sorted) for some small inputs there's a plateau in performance. Let's zoom in on that part of the graph to understand better what's going on.
+At the same time it's important to notice that in our performance graph (see @fig:fully-parallel-merge-sort) for some small inputs there's a plateau in performance. Let's zoom in on that part of the graph to understand better what's going on.
 
 #figure(
   grid(
