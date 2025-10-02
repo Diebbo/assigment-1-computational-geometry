@@ -210,7 +210,7 @@ void parallel_merge(vector<int> &A, vector<int> &B,
   b_indices[0] = 0;
   k_indices[0] = 0;
 
-  #pragma omp parallel for
+  #pragma omp taskloop
   for (int i = 1; i < num_threads; i++) {
     int k = i * n / num_threads;
     auto [a_count, b_count] = selection(A, B, k);
@@ -222,8 +222,8 @@ void parallel_merge(vector<int> &A, vector<int> &B,
   a_indices[num_threads] = A.size();
   b_indices[num_threads] = B.size();
   k_indices[num_threads] = n;
-
-  #pragma omp parallel for
+  
+  #pragma omp taskloop
   for (int i = 0; i < num_threads; i++) {
     int a_end = a_indices[i + 1];
     int b_end = b_indices[i + 1];
@@ -256,11 +256,11 @@ Finally, we use another parallel for loop to merge the two arrays, using the ind
 
 The work of the algorithm is $W(n) = O(n)$, as for one CPU the cost is the same as a sequential merge. But the depth is $D(n) = O(log(n))$, since we cannot parallelize the selection problem, while the merging of the subarrays takes $O(n / p)$ time, where $p$ is the number of processors. Thus, having infinite processors the depth is dominated by the selection problem, which is $O(log(n))$.
 
-In the real world, the number of processors is limited, hence the factor $n / p$ willhave a big impact on the performance of the algorithm. Furthermore, we have that $T(n, p) = O(log(n) + n / p + epsilon) times p$, where $epsilon$ is the overhead due to the parallelization. This means that for small arrays, the overhead will dominate the performance of the algorithm, making it slower than a sequential merge.
+In the real world, the number of processors is limited, hence the factor $n / p$ will have a big impact on the performance of the algorithm. Furthermore, we have that $T(n, p) = O(log(n) + n / p + epsilon(p))$, where $epsilon(p)$ is the overhead due to the parallelization with $p$ processors. This means that for small arrays, the overhead will dominate the performance of the algorithm, making it slower than a sequential merge.
 
 == Benchmarking
 
-For the reasons explained before, we found our benchmark to be slower then the sequential merge for small arrays. To solve this problem, we added a threshold to the parallel merge function, which will use a sequential merge for small arrays. We found that the optimal threshold is around $2^{14}$ elements.
+For the reasons explained before, we found our benchmark to be slower then the sequential merge for small arrays. To solve this problem, we added a threshold to the parallel merge function, which will use a sequential merge for small arrays. We found that the optimal threshold is around $2^14$ elements.
 The benchmark results can be seen in @fig:merge-sequential-vs-parallel.
 
 #figure(
@@ -274,27 +274,21 @@ We can combine all the techniques explained so far to obtain a fully parallel me
 The following code implements it:
 
 ```cpp
-void fully_parallel_merge_sort(vector<int> &arr, int left, int right,
-                               int depth) {
+void fully_parallel_merge_sort(vector<int> &arr, int left, int right) {
   if (left >= right)
     return;
 
   int mid = left + (right - left) / 2;
 
-  // limit parallel recursion depth based on machine capabilities
-  if (depth < 5) {
+
 #pragma omp taskgroup
     {
 #pragma omp task shared(arr) untied if (right - left >= (1 << 14))
-      fully_parallel_merge_sort(arr, left, mid, depth + 1);
+      fully_parallel_merge_sort(arr, left, mid);
 #pragma omp task shared(arr) untied if (right - left >= (1 << 14))
-      fully_parallel_merge_sort(arr, mid + 1, right, depth + 1);
+      fully_parallel_merge_sort(arr, mid + 1, right);
     }
-  } else {
-    // fallback sequential recursion
-    fully_parallel_merge_sort(arr, left, mid, depth + 1);
-    fully_parallel_merge_sort(arr, mid + 1, right, depth + 1);
-  }
+
   // create the two vectors to merge
   vector<int> left_vec;
   vector<int> right_vec;
